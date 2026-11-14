@@ -24,6 +24,14 @@ class GroupSummary(BaseModel):
     members: list[UserSummary]
 
 
+@router.get("/users", response_model=list[UserSummary])
+def list_users(db: Annotated[Session, Depends(get_db)]) -> list[UserSummary]:
+    users = db.scalars(
+        select(User).where(User.deleted_at.is_(None)).order_by(User.name, User.id)
+    ).all()
+    return [UserSummary(id=user.id, name=user.name) for user in users]
+
+
 def _group_response(group: Group) -> GroupSummary:
     members = sorted(
         (membership.user for membership in group.members),

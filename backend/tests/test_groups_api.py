@@ -1,3 +1,10 @@
+def test_list_users_returns_active_users(client):
+    test_client, _, _, users, _ = client
+    response = test_client.get("/users")
+    assert response.status_code == 200
+    assert [user["id"] for user in response.json()] == users
+
+
 def test_group_list_only_contains_requesting_users_groups(client):
     test_client, group_id, other_group_id, users, _ = client
     response = test_client.get("/groups", headers={"X-User": str(users[0])})
