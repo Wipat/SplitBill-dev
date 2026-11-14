@@ -1,9 +1,8 @@
 import os
 
+from models import Group, GroupMember, User
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
-
-from models import Group, GroupMember, User
 
 SEED_USERS = ("alice", "bob", "carol", "dan")
 SEED_GROUPS = ("Chiang Mai trip", "Office lunch")

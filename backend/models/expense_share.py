@@ -1,16 +1,25 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, Numeric, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
+if TYPE_CHECKING:
+    from .expense import Expense
+    from .user import User
+
 
 class ExpenseShare(Base):
     __tablename__ = "expense_shares"
-    __table_args__ = (UniqueConstraint("expense_id", "user_id", name="uq_expense_shares_expense_user"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "expense_id", "user_id", name="uq_expense_shares_expense_user"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     expense_id: Mapped[int] = mapped_column(ForeignKey("expenses.id"), nullable=False)

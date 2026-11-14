@@ -5,4 +5,4 @@ from .group import Group
 from .group_member import GroupMember
 from .user import User
 
-__all__ = ["Base", "User", "Group", "GroupMember", "Expense", "ExpenseShare"]
+__all__ = ["Base", "Expense", "ExpenseShare", "Group", "GroupMember", "User"]
