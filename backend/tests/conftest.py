@@ -15,6 +15,7 @@ if str(BACKEND_ROOT) not in sys.path:
 
 from dependencies.auth import get_current_user_id, require_group_member
 from dependencies.database import get_db
+from main import app
 from models import Base, Group, GroupMember, User
 
 
@@ -56,4 +57,41 @@ def auth_client():
             yield client, alice_id, bob_id, group_id
     finally:
         app.dependency_overrides.clear()
+        engine.dispose()
+
+
+@pytest.fixture
+def client():
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+        users = [User(name=name) for name in ("alice", "bob", "carol", "dan")]
+        group = Group(name="Trip")
+        other_group = Group(name="Office")
+        session.add_all([*users, group, other_group])
+        session.flush()
+        session.add_all(
+            GroupMember(group_id=group.id, user_id=user.id) for user in users[:3]
+        )
+        session.add_all(
+            GroupMember(group_id=other_group.id, user_id=user.id) for user in users[1:]
+        )
+        session.commit()
+        group_id, other_group_id = group.id, other_group.id
+        user_ids = [user.id for user in users]
+
+    def override_get_db():
+        with Session(engine) as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        with TestClient(app) as test_client:
+            yield test_client, group_id, other_group_id, user_ids, engine
+    finally:
+        app.dependency_overrides.pop(get_db, None)
         engine.dispose()
