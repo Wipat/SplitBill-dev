@@ -18,6 +18,15 @@ def test_balances_are_zero_sum_and_exclude_soft_deleted_expenses(client):
         },
     )
     assert created.status_code == 201
+    shares_by_user = {
+        share["user_id"]: Decimal(share["share_amount"])
+        for share in created.json()["shares"]
+    }
+    assert [shares_by_user[user_id] for user_id in users[:3]] == [
+        Decimal("33.34"),
+        Decimal("33.33"),
+        Decimal("33.33"),
+    ]
     balances_response = test_client.get(
         f"/groups/{group_id}/balances", headers={"X-User": str(users[0])}
     )

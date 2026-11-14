@@ -123,3 +123,12 @@ def test_missing_idempotency_header_is_rejected(client):
         json=_payload(users),
     )
     assert response.status_code == 422
+
+
+def test_alice_cannot_access_expenses_in_group_without_membership(client):
+    test_client, _, other_group_id, users, _ = client
+    response = test_client.get(
+        f"/groups/{other_group_id}/expenses",
+        headers={"X-User": str(users[0])},
+    )
+    assert response.status_code == 403
